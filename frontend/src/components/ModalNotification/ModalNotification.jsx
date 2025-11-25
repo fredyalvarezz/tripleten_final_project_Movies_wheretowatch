@@ -3,7 +3,7 @@ import "./ModalNotification.css";
 
 export default function ModalNotification({ isOpen, message, type, onClose }) {
   
-  // Auto cierre después de 2.5s
+  
   useEffect(() => {
     if (!isOpen) return;
 
@@ -16,7 +16,6 @@ export default function ModalNotification({ isOpen, message, type, onClose }) {
     <div className={`modal ${isOpen ? "modal_opened" : ""}`}>
       <div className="modalNotification__content">
 
-        {/* Icono según el tipo */}
         <div className={`modalNotification__icon ${type}`}>
           {type === "success" && "✔"}
           {type === "error" && "✖"}
