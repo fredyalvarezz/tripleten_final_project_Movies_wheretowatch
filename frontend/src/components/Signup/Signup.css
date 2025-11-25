@@ -1,0 +1,86 @@
+.signup {
+  position: relative;
+  min-height: 90vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.signup__background {
+  position: absolute;
+  inset: 0;
+  background: url("../../images/movies1.jpg") center/cover no-repeat;
+  filter: brightness(0.3) blur(1px);
+  z-index: 0;
+}
+
+.signup__form {
+  position: relative;
+  z-index: 1;
+  background-color: var(--color-primary);
+  border-radius: 30px;
+  padding: 40px;
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  max-height: 559px;
+  box-shadow: 0 4px 20px rgba(29, 51, 84, 0.3);
+  text-align: center;
+}
+
+.signup__title {
+  font-size: 32px;
+  color: var(--color-dark);
+  margin-bottom: 8px;
+}
+
+.signup__subtitle {
+  font-size: 16px;
+  color: var(--color-gray);
+  margin-bottom: 24px;
+}
+
+.signup__input {
+  width: 100%;
+  height: auto;
+  max-height: 60px;
+  max-width: 400px;
+  padding: 12px;
+  border: 1px solid var(--color-gray);
+  border-radius: 8px;
+  margin-top: 6px;
+  font-size: 16px;
+}
+
+
+.signup__button {
+  width: 100%;
+  padding: 14px;
+  background-color: var(--color-dark);
+  color: var(--color-primary);
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.signup__button:hover {
+  background-color: #2c4a80;
+}
+
+.signup__footer {
+  margin-top: 16px;
+  color: var(--color-gray);
+}
+
+.signup__link {
+  background: none;
+  border: none;
+  color: var(--color-dark);
+  cursor: pointer;
+  text-decoration: underline;
+  font: inherit;
+  padding: 0;
+}

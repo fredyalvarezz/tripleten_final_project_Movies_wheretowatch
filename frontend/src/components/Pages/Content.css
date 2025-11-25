@@ -1,0 +1,33 @@
+.content {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.content--with-header {
+  padding-top: 60px;
+}
+
+.content__title {
+  text-align: center;
+  font-size: 40px;
+  font-weight: 900;
+}
+.content-separation{
+  max-width: 1400px;
+  width: 100%;
+  background-color: var(--color-dark);
+}
+
+@media screen and (max-width: 768px) {
+  .content__title {
+    font-size: 32px;
+   
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .content__title {
+    font-size: 26px;
+    
+  }
+}
