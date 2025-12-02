@@ -1,5 +1,10 @@
 {
   "extends": "airbnb-base",
+  "env": {
+    "node": true,
+    "commonjs": true,
+    "es2021": true
+  },
   "rules": {
     "consistent-return": "off",
     "no-console": "off",
@@ -7,4 +12,5 @@
     "linebreak-style": 0,
     "no-unused-vars": ["error", { "argsIgnorePattern": "next" }]
   }
+  
 }
