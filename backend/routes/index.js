@@ -7,7 +7,7 @@ const watchlistRoutes = require("./watchlist");
 
 // Rutas públicas
 router.post("/signup",validateSignup, createUser);
-router.post("/login", validateLogin, login); // estandarizamos nombre
+router.post("/login", validateLogin, login); 
 
 // Rutas privadas
 router.use(auth);

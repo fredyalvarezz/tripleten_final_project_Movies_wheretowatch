@@ -6,7 +6,7 @@ const watchItemSchema = new mongoose.Schema(
     externalId: { 
       type: String, 
       required: true 
-    }, // ID de tu StreamWhereApi
+    }, 
 
     title: { 
       type: String, 

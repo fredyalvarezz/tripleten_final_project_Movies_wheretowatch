@@ -41,7 +41,7 @@ app.use("/api",routes);
 // err0res de celebrate
 app.use(errors());
 
-//  RUTA 404 no encontrado
+//  Ruta 404 no encontrado
 app.use((req, res) => {
   res.status(404).send({ message: "Recurso no encontrado" });
 });
