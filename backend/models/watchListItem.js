@@ -1,0 +1,66 @@
+const mongoose = require("mongoose");
+const validator = require("validator");
+
+const watchItemSchema = new mongoose.Schema(
+  {
+    externalId: { 
+      type: String, 
+      required: true 
+    }, // ID de tu StreamWhereApi
+
+    title: { 
+      type: String, 
+      required: true 
+    },
+
+    image: { 
+      type: String, 
+      required: true,
+      validate: {
+        validator: (v) => validator.isURL(v),
+        message: "URL de imagen inválida",
+      }
+    },
+
+    genre: { 
+      type: String, 
+      required: true 
+    },
+
+    synopsis: { 
+      type: String, 
+      required: true 
+    },
+
+    releaseDate: { 
+      type: String, 
+      required: true 
+    },
+
+    endDate: { 
+      type: String, 
+      default: null 
+    },
+
+    platforms: {
+      type: [String],
+      required: true
+    },
+
+    type: {
+      type: String,
+      enum: ["movie", "series"],
+      required: true
+    },
+
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+      select: false // igual que en el ejemplo
+    }
+  },
+  { versionKey: false }
+);
+
+module.exports = mongoose.model("watchListItem", watchItemSchema);
