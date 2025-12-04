@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Signup.css";
+import MainApi from "../../utils/MainApi";
 
 export default function Signup({ 
   onSignup,
@@ -11,25 +12,22 @@ export default function Signup({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  function handleSubmit(e) {
+  function handleGoToLogin() {
+  navigate("/login");
+}
+
+  async function handleSubmit(e) {
     e.preventDefault();
 
-    const user = {
-      email,
-      password,
-    };
-
-    // Guardar usuario
-    localStorage.setItem("user", JSON.stringify(user));
-
+    try {
+    await MainApi.register({ email, password });
     showNotification("Usuario registrado correctamente", "success");
-
     navigate("/login");
+  } catch (err) {
+    showNotification(err.message, "error");
+  }
   }
 
-  function handleGoToLogin() {
-    navigate("/login");
-  }
 
   return (
     <div className="signup">

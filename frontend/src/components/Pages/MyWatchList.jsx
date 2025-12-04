@@ -5,25 +5,17 @@ import "../MovieCard/MovieCard.css";
 import "../MovieCardList/MovieCardList.css";
 import "./Content.css";
 
-export default function MyWatchList({
-  items,
-  onToggleSeen,
-  onDelete,
-  setIsLoading
-}) {
-
+export default function MyWatchList({ items, onToggleSeen, onDelete, setIsLoading }) {
   const [searchResults, setSearchResults] = useState([]);
   const [error, setError] = useState("");
 
-  // Busqueda Local
- function localSearch(q) {
+  // Búsqueda local
+  function localSearch(q) {
     const qLower = q.toLowerCase();
-    return items.filter(item =>
-      item.title.toLowerCase().includes(qLower)
-    );
+    return items.filter((item) => item.title.toLowerCase().includes(qLower));
   }
 
-  // Función reutilizable para renderizar una sección
+  // Función para renderizar secciones
   function renderSection(title, list) {
     return (
       <>
@@ -32,81 +24,70 @@ export default function MyWatchList({
           {list.length === 0 ? (
             <p>No hay elementos aquí.</p>
           ) : (
-            list.map(item => (
+            list.map((item) => (
               <MovieCard
                 key={item.id}
                 movie={item}
                 showActions={true}
-                onToggleWatched={onToggleSeen}
+                onToggleWatched={() => onToggleSeen(item.id)}
                 onDelete={() => onDelete(item.id)}
               />
             ))
           )}
-          
         </div>
-            <p className="content-separation">=</p>
+        <p className="content-separation">=</p>
       </>
     );
   }
 
-  // Clasificación por tipo
-  const movies = items.filter(i => i.type === "movies");
-  const series = items.filter(i => i.type === "series");
+  // Clasificación por tipo y estado
+  const movies = items.filter((i) => i.type === "movies");
+  const series = items.filter((i) => i.type === "series");
 
-  // Películas
-  const pendingMovies = movies.filter(i => i.status === "pendiente");
-  const watchingMovies = movies.filter(i => i.status === "viendo");
-  const finishedMovies = movies.filter(i => i.status === "vista");
+  const pendingMovies = movies.filter((i) => i.status === "pendiente");
+  const watchingMovies = movies.filter((i) => i.status === "viendo");
+  const finishedMovies = movies.filter((i) => i.status === "vista");
 
-  // Series
-  const pendingSeries = series.filter(i => i.status === "pendiente");
-  const watchingSeries = series.filter(i => i.status === "viendo");
-  const finishedSeries = series.filter(i => i.status === "vista");
+  const pendingSeries = series.filter((i) => i.status === "pendiente");
+  const watchingSeries = series.filter((i) => i.status === "viendo");
+  const finishedSeries = series.filter((i) => i.status === "vista");
 
   return (
     <section className="content content--with-header">
       <h1 className="content__title">Mi Lista</h1>
 
-      <SearchForm 
-        setIsLoading={setIsLoading} 
+      <SearchForm
+        setIsLoading={setIsLoading}
         setError={setError}
         onResults={setSearchResults}
         error={error}
         localSearch={localSearch}
-        /> 
+      />
 
-        {/* Resultados de busqueda*/}
-        {searchResults.length > 0 && (
-          <section className="content-result">
+      {searchResults.length > 0 ? (
+        <section className="content-result">
           <h2 className="section-title">Resultados encontrados</h2>
-
           <div className="movie-card-list">
-            {searchResults.map(item => (
+            {searchResults.map((item) => (
               <MovieCard
                 key={item.id}
                 movie={item}
                 showActions={true}
-                onToggleWatched={onToggleSeen}
+                onToggleWatched={() => onToggleSeen(item.id)}
                 onDelete={() => onDelete(item.id)}
               />
             ))}
           </div>
         </section>
-      )}
-
-      {/* Si no hay búsqueda se muestra la lista normal */}
-      {searchResults.length === 0 && (
+      ) : (
         <>
-      {/* Películas */}
-      {renderSection("Películas no vistas", pendingMovies)}
-      {renderSection("Películas viendo", watchingMovies)}
-      {renderSection("Películas vistas", finishedMovies)}
-
-      {/* Series */}
-      {renderSection("Series no vistas", pendingSeries)}
-      {renderSection("Series viendo", watchingSeries)}
-      {renderSection("Series vistas", finishedSeries)}
-      </>
+          {renderSection("Películas no vistas", pendingMovies)}
+          {renderSection("Películas viendo", watchingMovies)}
+          {renderSection("Películas vistas", finishedMovies)}
+          {renderSection("Series no vistas", pendingSeries)}
+          {renderSection("Series viendo", watchingSeries)}
+          {renderSection("Series vistas", finishedSeries)}
+        </>
       )}
     </section>
   );

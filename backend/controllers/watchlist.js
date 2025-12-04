@@ -33,3 +33,25 @@ module.exports.deleteItem = async (req, res) => {
     res.status(400).send({ message: "Error al eliminar item" });
   }
 };
+
+// EDIT /watchlist/:id
+module.exports.updateItem = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!status) return res.status(400).json({ message: "Status is required" });
+
+    const updatedItem = await Watchlist.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+
+    if (!updatedItem) return res.status(404).json({ message: "Item not found" });
+
+    res.json(updatedItem);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
