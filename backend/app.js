@@ -16,7 +16,7 @@ mongoose.connect(process.env.MONGODB_URL);
 const allowedOrigins = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
-  "https://tudominio.com",
+  "https://streamwhere.mooo.com",
 ];
 
 app.use(cors({
