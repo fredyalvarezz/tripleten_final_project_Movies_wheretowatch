@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import mainApi from "../../utils/MainApi.js";
 
 import Header from "../Header/Header.jsx";
 import Main from "../Main/Main.jsx";
@@ -59,11 +60,20 @@ export default function App() {
 
   // Cargar lista guardada al iniciar
   useEffect(() => {
-    const saved = localStorage.getItem("myWatchList");
-    if (saved) {
-      setMyWatchList(JSON.parse(saved));
+  async function fetchWatchlist() {
+    try {
+      const items = await mainApi.getWatchlist();
+      setMyWatchList(items);
+    } catch (err) {
+      console.error("Error al cargar watchlist:", err);
     }
-  }, []);
+  }
+
+  if (isLoggedIn) {
+    fetchWatchlist();
+  }
+}, [isLoggedIn]);
+
 
   // Guardar automáticamente cuando cambie
   useEffect(() => {
@@ -114,20 +124,34 @@ export default function App() {
     localStorage.setItem("searchResults", JSON.stringify(data));
   };
 
-  function handleLogin() {
+  async function handleLogin() {
+  try {
+    const userInfo = await mainApi.getCurrentUser();
+    setUserData(userInfo);
+
     setIsLoggedIn(true);
     localStorage.setItem("loggedIn", "true");
+
     showNotification("Sesión iniciada correctamente", "success");
+  } catch (err) {
+    showNotification("Error cargando usuario", "error");
   }
+}
+
 
   function handleLogout() {
-    setIsLoggedIn(false);
-    localStorage.removeItem("loggedIn");
-    localStorage.removeItem("myWatchList");
-    localStorage.removeItem("searchResults");
-    localStorage.removeItem("user");
-    showNotification("Sesion cerrada correctamente", "warning");
-  }
+  localStorage.removeItem("jwt");
+  localStorage.removeItem("loggedIn");
+  localStorage.removeItem("myWatchList");
+  localStorage.removeItem("searchResults");
+  localStorage.removeItem("user");
+
+  setUserData({});
+  setIsLoggedIn(false);
+
+  showNotification("Sesión cerrada correctamente", "warning");
+}
+
 
   function handleOpenProfile() {
     setIsProfileOpen(true);
@@ -148,57 +172,79 @@ export default function App() {
   }
 
   // Cambia estado en Card en WatchList Pendiente, viendo y visto
-  function handleToggleSeen(id) {
-    const statusChange = {
-      pendiente: "viendo",
-      viendo: "vista",
-      vista: "pendiente"
-    };
+  async function handleToggleSeen(id) {
+  const statusChange = {
+    pendiente: "viendo",
+    viendo: "vista",
+    vista: "pendiente"
+  };
 
-    // Buscar el item original
-    const originalItem = myWatchList.find(item => item.id === id);
+  const originalItem = myWatchList.find(item => item.id === id);
   if (!originalItem) return;
 
+  const newStatus = statusChange[originalItem.status];
+
+  try {
+    const updatedItem = await mainApi.updateWatchlistItem({
+      id,
+      status: newStatus
+    });
+
     const updatedList = myWatchList.map(item =>
-      item.id === id ? { ...item, status: statusChange[item.status] }
-        : item
+      item.id === id ? { ...item, status: updatedItem.status } : item
     );
 
-    // Actualizamos el estado de myWatchList con la nueva lista
     setMyWatchList(updatedList);
-
-    const newStatus = statusChange[originalItem.status];
     showNotification(`Película ${originalItem.title} ahora está en estado: ${newStatus}`, "success");
-    
+  } catch (err) {
+    showNotification("Error al actualizar el estado", "error");
+    console.error(err);
   }
+}
+
 
   // Eliminar card en WatchList
-  function handleDelete(id) {
+async function handleDelete(id) {
+  try {
+    await mainApi.deleteFromWatchlist(id);
     setMyWatchList(prev => prev.filter(item => item.id !== id));
-    showNotification("Pelicula removida correctamente", "success");
+    showNotification("Película removida correctamente", "success");
+  } catch (err) {
+    showNotification("Error al eliminar la película", "error");
+    console.error(err);
   }
+}
+
 
   // Añadir a MyWatchList
-  function handleAddToMyWatchList(item) {
-    if (!item) return;
+  async function handleAddToMyWatchList(item) {
+  if (!item) return;
 
-    const newItem = {
-      ...item,
-      type: item.type || (item.media_type === "tv" ? "series" : "movies"),
-      status: "pendiente"
-    };
+  const newItem = {
+    ...item,
+    type: item.type || (item.media_type === "tv" ? "series" : "movies"),
+    status: "pendiente"
+  };
 
-    const exists = myWatchList.some(
-      (i) => i.type === newItem.type && i.id === newItem.id
-    );
+  const exists = myWatchList.some(
+    (i) => i.type === newItem.type && i.id === newItem.id
+  );
 
-    if (exists) {
-      showNotification("Ya está en tu lista", "warning");
-      return;
-    }
-
-    setMyWatchList(prev => [...prev, newItem]);    
+  if (exists) {
+    showNotification("Ya está en tu lista", "warning");
+    return;
   }
+
+  try {
+    const addedItem = await mainApi.addToWatchlist(newItem);
+    setMyWatchList(prev => [...prev, addedItem]);
+    showNotification("Película agregada a tu lista", "success");
+  } catch (err) {
+    showNotification("Error al agregar la película", "error");
+    console.error(err);
+  }
+}
+
 
   // Actualiza la foto de perfil en el estado
   function handleChangeAvatar(newAvatarUrl) {

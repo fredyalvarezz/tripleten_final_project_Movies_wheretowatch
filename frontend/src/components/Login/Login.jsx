@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
+import MainApi from "../../utils/MainApi";
 
 export default function Login({ 
   onLogin,
@@ -11,26 +12,29 @@ export default function Login({
   const [password, setPassword] = useState("");
 
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
-    const storedUser = JSON.parse(localStorage.getItem("user"));
+    try {
+    const res = await fetch("https://streamwhere.mooo.com/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
-    if (!storedUser) {
-       showNotification("No existe un usuario registrado", "error");
-      return;
-    }
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
 
-    if (storedUser.email !== email || storedUser.password !== password) {
-       showNotification("Correo o contraseña incorrectos", "error");
-      return;
-    }
+    // Guardar token en localStorage
+    localStorage.setItem("jwt", data.token);
 
-    // Login exitoso
-    localStorage.setItem("loggedIn", "true");
-    onLogin?.(); 
-    navigate("/"); 
+    // Notificar App.jsx
+    onLogin();
+
+  } catch (err) {
+    showNotification("Credenciales incorrectas", "error");
   }
+}
 
   function handleGoToSignup() {
     navigate("/signup");
