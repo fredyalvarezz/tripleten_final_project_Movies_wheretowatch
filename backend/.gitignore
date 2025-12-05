@@ -18,5 +18,8 @@ node_modules
 
 # .env de la raiz del proyecto
 .env
+.env.save
+.env.*
+*.env
 
 package-lock.json
