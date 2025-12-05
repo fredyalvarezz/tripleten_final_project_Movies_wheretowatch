@@ -42,7 +42,7 @@ module.exports.updateItem = async (req, res) => {
 
     if (!status) return res.status(400).json({ message: "Status is required" });
 
-    const updatedItem = await Watchlist.findByIdAndUpdate(
+    const updatedItem = await watchListItem.findByIdAndUpdate(
       id,
       { status },
       { new: true }

@@ -49,7 +49,7 @@ const watchItemSchema = new mongoose.Schema(
 
     type: {
       type: String,
-      enum: ["movie", "series"],
+      enum: ["movies", "series"],
       required: true
     },
 

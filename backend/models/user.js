@@ -25,6 +25,10 @@ const userSchema = new mongoose.Schema(
       minlength: 2,
       maxlength: 30,
     },
+    avatar: {
+  type: String,
+  default: "https://i.pravatar.cc/150"
+},
   },
   { versionKey: false }
 );

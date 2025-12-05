@@ -4,7 +4,7 @@ const { validateId } = require("../middlewares/validate");
 
 router.get("/", getItems);
 router.post("/", createItem);
-router.patch("/:id", validateId, updateItem); // <-- Nuevo endpoint PATCH
+router.patch("/:id", validateId, updateItem);
 router.delete("/:id", validateId, deleteItem);
 
 module.exports = router;

@@ -12,7 +12,8 @@ module.exports.createUser = async (req, res) => {
     const user = await User.create({
       email,
       password: hash,
-      name: name || "Usuario"
+      name: name || "Usuario",
+      avatar: "https://i.pravatar.cc/150"
     });
 
     res.status(201).send({
@@ -68,6 +69,7 @@ module.exports.getCurrentUser = async (req, res) => {
     res.send({
       email: user.email,
       name: user.name,
+      avatar: user.avatar,
       _id: user._id
     });
   } catch (err) {
