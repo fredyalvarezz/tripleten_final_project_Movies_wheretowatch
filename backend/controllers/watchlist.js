@@ -10,8 +10,10 @@ module.exports.getItems = async (req, res) => {
 module.exports.createItem = async (req, res) => {
   try {
     const item = await watchListItem.create({ ...req.body, owner: req.user._id });
+    console.log("Item creado:", item);
     res.status(201).send(item);
   } catch (err) {
+    console.error("Error al crear item:", err); 
     res.status(400).send({ message: "Error al crear item" });
   }
 };
