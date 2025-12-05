@@ -217,27 +217,17 @@ async function handleDelete(id) {
 
 
   // Añadir a MyWatchList
- async function handleAddToMyWatchList(item) {
+async function handleAddToMyWatchList(item) {
   if (!item) return;
 
   const newItem = {
-    externalId: item.id || item.externalId,
-    title: item.title || item.name,
-    image: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : item.image,
-    genre: item.genre || (item.genre_ids ? item.genre_ids.join(", ") : "N/A"),
-    synopsis: item.overview || item.synopsis || "Sinopsis no disponible",
-    releaseDate: item.release_date || item.first_air_date || "Desconocida",
-    endDate: item.end_date || null,
-    platforms: item.platforms || ["Desconocida"],
-
-    // IMPORTANTE: backend solo acepta "movie" o "series"
-    type: item.media_type === "tv" ? "series" : "movie",
-
+    ...item,
+    type: item.type || (item.media_type === "tv" ? "series" : "movies"), // Cambié "movie" por "movies"
     status: "pendiente"
   };
 
-  const exists = myWatchList.some(i =>
-    i.externalId === newItem.externalId
+  const exists = myWatchList.some(
+    (i) => i.type === newItem.type && i.id === newItem.id
   );
 
   if (exists) {
@@ -248,9 +238,9 @@ async function handleDelete(id) {
   try {
     const addedItem = await mainApi.addToWatchlist(newItem);
     setMyWatchList(prev => [...prev, addedItem]);
-    showNotification("Agregado a tu lista", "success");
+    showNotification("Película agregada a tu lista", "success");
   } catch (err) {
-    showNotification("Error al agregar", "error");
+    showNotification("Error al agregar la película", "error");
     console.error(err);
   }
 }
