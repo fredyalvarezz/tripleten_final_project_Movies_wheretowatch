@@ -3,31 +3,36 @@ import { useNavigate } from "react-router-dom";
 import "./Signup.css";
 import MainApi from "../../utils/MainApi";
 
-export default function Signup({ 
-  onSignup,
-  showNotification
- }) {
+export default function Signup({ onSignup, showNotification }) {
   const navigate = useNavigate();
-
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   function handleGoToLogin() {
-  navigate("/login");
-}
+    navigate("/login");
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
 
     try {
-    await MainApi.register({ email, password });
-    showNotification("Usuario registrado correctamente", "success");
-    navigate("/login");
-  } catch (err) {
-    showNotification(err.message, "error");
-  }
-  }
+      // Registrar usuario
+      await MainApi.register({ name, email, password });
 
+      // Opcional: login automático después de registro
+      const loginData = await MainApi.login({ email, password });
+      localStorage.setItem("jwt", loginData.token);
+
+      // Notificar y actualizar App.jsx
+      showNotification("Usuario registrado correctamente", "success");
+      onSignup();
+
+      navigate("/"); // Redirigir al inicio
+    } catch (err) {
+      showNotification(err.message || "Error al registrar usuario", "error");
+    }
+  }
 
   return (
     <div className="signup">
@@ -35,7 +40,16 @@ export default function Signup({
 
       <form className="signup__form" onSubmit={handleSubmit}>
         <h1 className="signup__title">StreamWhere</h1>
-        <p className="signup__subtitle">Crea tu cuenta y prepara tu lista de peliculas.</p>
+        <p className="signup__subtitle">Crea tu cuenta y prepara tu lista de películas.</p>
+
+        <input
+          type="text"
+          className="signup__input"
+          placeholder="Nombre de usuario"
+          required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
 
         <input
           type="email"
