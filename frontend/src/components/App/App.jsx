@@ -222,7 +222,7 @@ async function handleAddToMyWatchList(item) {
 
   const newItem = {
     ...item,
-    type: item.type || (item.media_type === "tv" ? "series" : "movies"), // Cambié "movie" por "movies"
+    type: item.type || (item.media_type === "tv" ? "series" : "movies"),
     status: "pendiente"
   };
 
@@ -234,6 +234,7 @@ async function handleAddToMyWatchList(item) {
     showNotification("Ya está en tu lista", "warning");
     return;
   }
+  console.log("Datos enviados:", newItem);
 
   try {
     const addedItem = await mainApi.addToWatchlist(newItem);
