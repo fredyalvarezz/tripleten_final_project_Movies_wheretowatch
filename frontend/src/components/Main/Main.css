@@ -4,7 +4,7 @@
   font-family: "Inter-Regular", sans-serif;
 }
 
-.main-banner {
+/* .main-banner {
   background: linear-gradient(rgba(29, 51, 84, 0.7),
       rgba(29, 51, 84, 0.7)),
     url("../../images/cine.avif") center/cover no-repeat;
@@ -15,7 +15,7 @@
   align-items: center;
   justify-content: flex-start;
   min-height: 400px;
-}
+} */
 
 .main-banner__content {
   max-width: 600px;

@@ -225,6 +225,7 @@ async function handleAddToMyWatchList(item) {
     type: item.type || (item.media_type === "tv" ? "series" : "movies"),
     status: "pendiente"
   };
+  console.log("Datos antes de la solicitud:", newItem);
 
   const exists = myWatchList.some(
     (i) => i.type === newItem.type && i.id === newItem.id
@@ -234,13 +235,15 @@ async function handleAddToMyWatchList(item) {
     showNotification("Ya está en tu lista", "warning");
     return;
   }
-  console.log("Datos enviados:", newItem);
 
   try {
     const addedItem = await mainApi.addToWatchlist(newItem);
+
+    console.log("Item agregado a la lista:", addedItem);
     setMyWatchList(prev => [...prev, addedItem]);
     showNotification("Película agregada a tu lista", "success");
   } catch (err) {
+    console.log("Error al agregar la película:", err);
     showNotification("Error al agregar la película", "error");
     console.error(err);
   }
