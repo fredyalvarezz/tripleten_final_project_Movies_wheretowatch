@@ -8,8 +8,6 @@ export default function Header({
   isLoggedIn,
   onProfileClick,
   onLogout,
-  userName,
-  userAvatar
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false); // Menu en movil
   const navigate = useNavigate();
@@ -32,7 +30,7 @@ export default function Header({
   }
 
   function handleLogoutClick() {
-    onLogout(); // actualiza el estado global a no logueado
+    onLogout(); 
     navigate("/"); // redirige a la página principal
   }
 
@@ -51,7 +49,11 @@ export default function Header({
               <button
                 className="header__profile-btn"
                 onClick={handleAccountClick}>
-                <img src={currentUser?.avatar} alt="avatar" className="header__avatar" />
+                <img
+                  src={currentUser?.avatar || "https://i.pravatar.cc/150"}
+                  alt="avatar"
+                  className="header__avatar"
+                />
                 <span className="header__username">{currentUser?.name}</span>
 
               </button>

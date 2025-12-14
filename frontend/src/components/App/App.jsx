@@ -23,10 +23,7 @@ import "./App.css";
 
 export default function App() {
 
-  //Login local
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    localStorage.getItem("loggedIn") === "true"
-  );
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -75,11 +72,11 @@ export default function App() {
     }
 
     if (isLoggedIn) {
-    fetchWatchlist();
-  } else {
-    setMyWatchList([]); 
-  }
-}, [isLoggedIn]);
+      fetchWatchlist();
+    } else {
+      setMyWatchList([]);
+    }
+  }, [isLoggedIn]);
 
 
   // Guardar automáticamente cuando cambie
@@ -115,13 +112,27 @@ export default function App() {
     loadData();
   }, []);
 
-  // Guardar datos para el usuario
+
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (storedUser) {
-      setUserData(storedUser);
-    }
-  }, []);
+  const token = localStorage.getItem("jwt");
+
+  if (!token) {
+    setIsLoggedIn(false);
+    return;
+  }
+
+  mainApi.getCurrentUser()
+    .then((user) => {
+      setUserData(user);
+      setIsLoggedIn(true);
+    })
+    .catch((err) => {
+      console.error("Token inválido:", err);
+      localStorage.removeItem("jwt");
+      setIsLoggedIn(false);
+    });
+}, []);
+
 
 
   // Handlers (Funciones)
@@ -136,7 +147,6 @@ export default function App() {
       const userInfo = await mainApi.getCurrentUser();
 
       setUserData(userInfo);
-      localStorage.setItem("user", JSON.stringify(userInfo));
 
       setIsLoggedIn(true);
       localStorage.setItem("loggedIn", "true");
@@ -154,10 +164,8 @@ export default function App() {
 
   function handleLogout() {
     localStorage.removeItem("jwt");
-    localStorage.removeItem("loggedIn");
     localStorage.removeItem("myWatchList");
     localStorage.removeItem("searchResults");
-    localStorage.removeItem("user");
 
     setUserData({});
     setMyWatchList([])

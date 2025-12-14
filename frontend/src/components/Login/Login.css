@@ -85,3 +85,15 @@
   font: inherit;
   padding: 0;
 }
+
+.login__error {
+  color: #ff4d4f;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+.login__button_disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 import MainApi from "../../utils/MainApi";
@@ -7,6 +7,17 @@ export default function Login({ onLogin, showNotification }) {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+  });
+  const [isValid, setIsValid] = useState(false);
+
+  useEffect(() => {
+    const hasErrors = Object.values(errors).some((error) => error);
+    const hasEmptyFields = !email || !password;
+    setIsValid(!hasErrors && !hasEmptyFields);
+  }, [email, password, errors]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -17,17 +28,13 @@ export default function Login({ onLogin, showNotification }) {
       // Guardar token en localStorage
       localStorage.setItem("jwt", data.token);
 
-      // Notificar App.jsx
+  
       onLogin();
 
-      navigate("/"); 
+      navigate("/");
     } catch (err) {
       showNotification(err.message || "Credenciales incorrectas", "error");
     }
-  }
-
-  function handleGoToSignup() {
-    navigate("/signup");
   }
 
   return (
@@ -42,25 +49,46 @@ export default function Login({ onLogin, showNotification }) {
           type="email"
           className="login__input"
           placeholder="Ingresa tu correo"
-          required
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setErrors((prev) => ({
+              ...prev,
+              email: e.target.validity.valid ? "" : "Correo inválido",
+            }));
+          }}
         />
+        {errors.email && <span className="login__error">{errors.email}</span>}
 
         <input
           type="password"
           className="login__input"
           placeholder="Ingresa tu contraseña"
-          required
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            setErrors((prev) => ({
+              ...prev,
+              password:
+                e.target.value.length >= 6
+                  ? ""
+                  : "La contraseña debe tener al menos 6 caracteres",
+            }));
+          }}
         />
+        {errors.password && <span className="login__error">{errors.password}</span>}
 
-        <button type="submit" className="login__button">Iniciar sesión</button>
+        <button
+          type="submit"
+          className={`login__button ${!isValid ? "login__button_disabled" : ""}`}
+          disabled={!isValid}
+        >
+          Iniciar sesión
+        </button>
 
         <p className="login__footer">
           ¿No tienes una cuenta?{" "}
-          <button type="button" className="login__link" onClick={handleGoToSignup}>
+          <button type="button" className="login__link" onClick={() => navigate("/signup")}>
             Regístrate
           </button>
         </p>
