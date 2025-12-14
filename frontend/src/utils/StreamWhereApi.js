@@ -105,7 +105,7 @@ class StreamWhereApi {
         }
     }
 
-    //  Se junta todo: tmdb + generos + watchmode + cache 
+    //  Se junta todo = tmdb + generos + watchmode + cache 
     async getItem(raw) {
         const key = `${raw.media_type}-${raw.id}`;
 
@@ -126,17 +126,17 @@ class StreamWhereApi {
         let endYear = "Presente";
 
         if (raw.media_type === "movie") {
-            // Películas no necesitan llamada adicional
+          
             releaseYear = (raw.release_date || "").slice(0, 4);
         } else {
             // Series
             // Si no vienen fechas entonces pedimos los detalles
             let first = raw.first_air_date;
             let last = raw.last_air_date;
-            let status = raw.status; // casi nunca viene en raw
+            let status = raw.status; 
 
             if (!first || !status) {
-                // Solo aquí llamamos al detalle
+                
                 const full = await this._getFullTvData(raw.id);
                 first = full.first_air_date;
                 last = full.last_air_date;
@@ -166,7 +166,7 @@ class StreamWhereApi {
             description: raw.overview || "Sin descripción disponible."
         };
 
-        // Guardar en cache RAM + localStorage
+        // Guardar en cache RAM y localStorage
         this.cacheItems.set(key, item);
         this._saveLocalCache();
 
