@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import MovieCard from "../MovieCard/MovieCard.jsx";
-import "./MovieCardList.css"; // Tu archivo CSS actual
+import "./MovieCardList.css"; 
 
 export default function MovieCardList({
   items = [],

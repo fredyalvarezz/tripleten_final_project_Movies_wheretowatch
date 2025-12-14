@@ -1,11 +1,20 @@
-import React, { useState} from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Header.css";
 import Navigation from "../Navigation/Navigation";
+import CurrentUserContext from "../Context/CurrentUserContext";
 
-export default function Header({isLoggedIn, onProfileClick, onLogout }) {
+export default function Header({
+  isLoggedIn,
+  onProfileClick,
+  onLogout,
+  userName,
+  userAvatar
+}) {
   const [isMenuOpen, setIsMenuOpen] = useState(false); // Menu en movil
-   const navigate = useNavigate();
+  const navigate = useNavigate();
+  const currentUser = useContext(CurrentUserContext);
+
 
   function toggleMenu() {
     setIsMenuOpen(!isMenuOpen);
@@ -22,7 +31,7 @@ export default function Header({isLoggedIn, onProfileClick, onLogout }) {
     }
   }
 
-   function handleLogoutClick() {
+  function handleLogoutClick() {
     onLogout(); // actualiza el estado global a no logueado
     navigate("/"); // redirige a la página principal
   }
@@ -40,10 +49,11 @@ export default function Header({isLoggedIn, onProfileClick, onLogout }) {
           {isLoggedIn ? (
             <>
               <button
-                className="header__signup"
-                onClick={handleAccountClick}
-              >
-                Perfil
+                className="header__profile-btn"
+                onClick={handleAccountClick}>
+                <img src={currentUser?.avatar} alt="avatar" className="header__avatar" />
+                <span className="header__username">{currentUser?.name}</span>
+
               </button>
               <button
                 className="header__signup header__logout"

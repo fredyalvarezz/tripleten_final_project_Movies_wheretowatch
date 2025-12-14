@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from "react";
 import ModalWithForm from "../ModalWithForm/ModalWithForm";
 import "./ModalEditProfile.css";
-import mainApi from "../../utils/MainApi"; // Asegúrate de tener funciones para updateUser
 
 export default function ModalEditProfile({
   isOpen,
   onClose,
   userData,
-  onUpdateUserInfo,
-  onChangeAvatar
+  onUpdateUserInfo
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -17,60 +15,52 @@ export default function ModalEditProfile({
 
   // Inicializa el formulario cuando se abre el modal
   useEffect(() => {
-    if (userData) {
+    if (isOpen && userData) {
       setName(userData.name || "");
       setEmail(userData.email || "");
       setAvatar(userData.avatar || "https://i.pravatar.cc/150");
-      setPassword(""); // Nunca mostramos la contraseña
+      setPassword("");
     }
   }, [userData, isOpen]);
-
-  // Actualizar y guardar la foto de perfil
-  function handleAvatarChange(e) {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatar(reader.result);
-        onChangeAvatar(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  }
 
   // Maneja el envío del formulario
   async function handleSubmit(e) {
     e.preventDefault();
-    try {
-      // Llamada al backend para actualizar usuario
-      const updatedUser = await mainApi.updateUser({
-        name,
-        email,
-        password: password || undefined, // si no cambió la contraseña, no se envía
-        avatar
-      });
 
-      onUpdateUserInfo(updatedUser);
-      onClose();
-    } catch (err) {
-      console.error("Error actualizando usuario:", err);
-      alert("Error al actualizar perfil");
+    const updatedData = {
+      name,
+      email,
+      avatar   
+    };
+
+    if (password.trim()) {
+      updatedData.password = password;
     }
+
+    onUpdateUserInfo(updatedData);
+    onClose();
   }
 
   return (
     <ModalWithForm isOpen={isOpen} onClose={onClose}>
       <div className="edit-profile">
         <img
-          src={avatar}
+          src={avatar || "https://i.pravatar.cc/150"}
           alt="Profile"
           className="edit-profile__avatar"
         />
+
         <form className="edit-profile__form" onSubmit={handleSubmit}>
           <h2 className="edit-profile__title">Editar perfil</h2>
 
-          <label className="edit-profile__label">Cambiar foto de perfil</label>
-          <input type="file" className="edit-profile__input" onChange={handleAvatarChange} />
+          <label className="edit-profile__label">URL de la foto de perfil</label>
+          <input
+            type="url"
+            className="edit-profile__input"
+            placeholder="Pega aquí una URL de imagen válida"
+            value={avatar}
+            onChange={(e) => setAvatar(e.target.value)}
+          />
 
           <label className="edit-profile__label">Nombre de usuario</label>
           <input
@@ -92,7 +82,7 @@ export default function ModalEditProfile({
           <input
             type="password"
             className="edit-profile__input"
-            placeholder="••••••••"
+            placeholder="(opcional)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />

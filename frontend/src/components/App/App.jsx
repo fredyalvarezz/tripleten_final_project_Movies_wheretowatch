@@ -17,6 +17,8 @@ import About from "../Pages/About.jsx";
 import ScrollToTop from "../ScrollToTop/ScrollToTop.jsx";
 import apiMovies from "../../utils/StreamWhereApi.js";
 import ModalNotification from "../ModalNotification/ModalNotification.jsx";
+import ProtectedRoute from "../ProtectedRoute/ProtectedRoute.jsx";
+import CurrentUserContext from "../Context/CurrentUserContext";
 import "./App.css";
 
 export default function App() {
@@ -33,7 +35,7 @@ export default function App() {
   const [userData, setUserData] = useState({
     email: "",
     password: "",
-    avatar: "https://i.pravatar.cc/150"  // Establecer una foto de perfil predeterminada
+    avatar: "https://i.pravatar.cc/150" // Foto de perfil predeterminada
   });
 
   const [myWatchList, setMyWatchList] = useState([]);
@@ -51,6 +53,9 @@ export default function App() {
     visible: false
   });
 
+  const [pendingMovie, setPendingMovie] = useState(null);
+
+
 
   //Preloader
   useEffect(() => {
@@ -60,17 +65,19 @@ export default function App() {
 
   // Cargar lista guardada al iniciar
   useEffect(() => {
-  async function fetchWatchlist() {
-    try {
-      const items = await mainApi.getWatchlist();
-      setMyWatchList(items);
-    } catch (err) {
-      console.error("Error al cargar watchlist:", err);
+    async function fetchWatchlist() {
+      try {
+        const items = await mainApi.getWatchlist();
+        setMyWatchList(items);
+      } catch (err) {
+        console.error("Error al cargar watchlist:", err);
+      }
     }
-  }
 
-  if (isLoggedIn) {
+    if (isLoggedIn) {
     fetchWatchlist();
+  } else {
+    setMyWatchList([]); 
   }
 }, [isLoggedIn]);
 
@@ -125,32 +132,39 @@ export default function App() {
   };
 
   async function handleLogin() {
-  try {
-    const userInfo = await mainApi.getCurrentUser();
-    setUserData(userInfo);
+    try {
+      const userInfo = await mainApi.getCurrentUser();
 
-    setIsLoggedIn(true);
-    localStorage.setItem("loggedIn", "true");
+      setUserData(userInfo);
+      localStorage.setItem("user", JSON.stringify(userInfo));
 
-    showNotification("Sesión iniciada correctamente", "success");
-  } catch (err) {
-    showNotification("Error cargando usuario", "error");
+      setIsLoggedIn(true);
+      localStorage.setItem("loggedIn", "true");
+
+      if (pendingMovie) {
+        handleAddToMyWatchList(pendingMovie);
+        setPendingMovie(null);
+      }
+      showNotification("Sesión iniciada correctamente", "success");
+    } catch (err) {
+      showNotification("Error cargando usuario", "error");
+    }
   }
-}
 
 
   function handleLogout() {
-  localStorage.removeItem("jwt");
-  localStorage.removeItem("loggedIn");
-  localStorage.removeItem("myWatchList");
-  localStorage.removeItem("searchResults");
-  localStorage.removeItem("user");
+    localStorage.removeItem("jwt");
+    localStorage.removeItem("loggedIn");
+    localStorage.removeItem("myWatchList");
+    localStorage.removeItem("searchResults");
+    localStorage.removeItem("user");
 
-  setUserData({});
-  setIsLoggedIn(false);
+    setUserData({});
+    setMyWatchList([])
+    setIsLoggedIn(false);
 
-  showNotification("Sesión cerrada correctamente", "warning");
-}
+    showNotification("Sesión cerrada correctamente", "warning");
+  }
 
 
   function handleOpenProfile() {
@@ -173,81 +187,99 @@ export default function App() {
 
   // Cambia estado en Card en WatchList Pendiente, viendo y visto
   async function handleToggleSeen(id) {
-  const statusChange = {
-    pendiente: "viendo",
-    viendo: "vista",
-    vista: "pendiente"
-  };
+    const statusChange = {
+      pendiente: "viendo",
+      viendo: "vista",
+      vista: "pendiente"
+    };
 
-  const originalItem = myWatchList.find(item => item.id === id);
-  if (!originalItem) return;
+    const originalItem = myWatchList.find(item => item.externalId === id);
+    if (!originalItem) return;
 
-  const newStatus = statusChange[originalItem.status];
+    const newStatus = statusChange[originalItem.status];
 
-  try {
-    const updatedItem = await mainApi.updateWatchlistItem({
-      id,
-      status: newStatus
-    });
+    try {
 
-    const updatedList = myWatchList.map(item =>
-      item.id === id ? { ...item, status: updatedItem.status } : item
-    );
+      const updatedItem = await mainApi.updateWatchlistItem(
+        originalItem.externalId,
+        newStatus
+      );
+      const updatedList = myWatchList.map(item =>
+        item.externalId === id ? { ...item, status: updatedItem.status } : item
+      );
 
-    setMyWatchList(updatedList);
-    showNotification(`Película ${originalItem.title} ahora está en estado: ${newStatus}`, "success");
-  } catch (err) {
-    showNotification("Error al actualizar el estado", "error");
-    console.error(err);
+      setMyWatchList(updatedList);
+      showNotification(`Película/serie "${originalItem.title}" ahora está en estado: ${newStatus}`, "success");
+    } catch (err) {
+      console.error('Error al actualizar estado:', err);
+      showNotification(`Error al actualizar el estado de "${originalItem.title}"`, "error");
+    }
   }
-}
 
 
   // Eliminar card en WatchList
-async function handleDelete(id) {
-  try {
-    await mainApi.deleteFromWatchlist(id);
-    setMyWatchList(prev => prev.filter(item => item.id !== id));
-    showNotification("Película removida correctamente", "success");
-  } catch (err) {
-    showNotification("Error al eliminar la película", "error");
-    console.error(err);
+  async function handleDelete(id) {
+    try {
+      const deletedItem = myWatchList.find(i => i.externalId === id);
+
+      await mainApi.deleteFromWatchlist(id);
+
+
+      setMyWatchList(prev => prev.filter(item => item.externalId !== id));
+
+      showNotification(`"${deletedItem?.title}" Se ha removido correctamente`, "success");
+    } catch (err) {
+
+      showNotification(`Error al eliminar "${deletedItem?.title}", intente de nuevo`, "error");
+    }
   }
-}
 
 
   // Añadir a MyWatchList
-async function handleAddToMyWatchList(item) {
-  if (!item) return;
+  async function handleAddToMyWatchList(item) {
+    if (!item) return;
 
-  const newItem = {
-    ...item,
-    type: item.type || (item.media_type === "tv" ? "series" : "movies"), // Cambié "movie" por "movies"
-    status: "pendiente"
-  };
+    const newItem = {
+      externalId: item.externalId || item.id,
+      title: item.title,
+      image: item.image,
+      genre: item.genres ? item.genres.join(", ") : item.genre,
+      synopsis: item.description,
+      releaseDate: item.releaseYear,
+      platforms: item.platform ? [item.platform] : [],
+      //type: item.type || (item.media_type === "tv" ? "series" : "movies"),
+      type:
+        item.type ||
+        (item.media_type === "tv" ? "series" :
+          item.media_type === "movie" ? "movies" :
+            item.first_air_date ? "series" : "movies"),
+      status: "pendiente",
+    };
 
-  const exists = myWatchList.some(
-    (i) => i.type === newItem.type && i.id === newItem.id
-  );
 
-  if (exists) {
-    showNotification("Ya está en tu lista", "warning");
-    return;
+    const exists = myWatchList.some(
+      (i) => i.type === newItem.type && i.externalId === newItem.externalId
+    );
+
+    if (exists) {
+      showNotification(`${newItem.title} ya esta en tu lista`, "warning");
+      return;
+    }
+
+    // si no existe se agrega
+    try {
+      const addedItem = await mainApi.addToWatchlist(newItem);
+      setMyWatchList((currentList) => [...currentList, addedItem]);
+
+      const mediaType = newItem.type === "movies" ? "Película" : "Serie";
+      showNotification(`${mediaType} "${newItem.title}" agregada a tu lista`, "success");
+    } catch (err) {
+      showNotification(`Error al agregar la ${newItem.title}`, "error");
+    }
   }
 
-  try {
-    const addedItem = await mainApi.addToWatchlist(newItem);
-    setMyWatchList(prev => [...prev, addedItem]);
-    showNotification("Película agregada a tu lista", "success");
-  } catch (err) {
-    showNotification("Error al agregar la película", "error");
-    console.error(err);
-  }
-}
 
-
-
-  // Actualiza la foto de perfil en el estado
+  // Actualiza la foto de perfil 
   function handleChangeAvatar(newAvatarUrl) {
     setUserData((prevData) => ({
       ...prevData,
@@ -255,11 +287,20 @@ async function handleAddToMyWatchList(item) {
     }));
   }
 
-  // Actualiza la información del usuario (correo, contraseña)
-  function handleUpdateUserInfo(updatedUser) {
-    setUserData(updatedUser);
-    localStorage.setItem("user", JSON.stringify(updatedUser));  // Guarda los cambios en localStorage
+  // Actualiza la información del usuario 
+  async function handleUpdateUserInfo(updatedData) {
+    try {
+      const user = await mainApi.updateUser(updatedData);
+
+      setUserData(user);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      showNotification("Datos actualizados correctamente", "success");
+    } catch (err) {
+      showNotification("Error actualizando datos", "error");
+    }
   }
+
 
   function showNotification(message, type = "success") {
     setModalNotification({ message, type, isOpen: true });
@@ -267,135 +308,138 @@ async function handleAddToMyWatchList(item) {
 
 
   return (
-    <Router>
-      <ScrollToTop />
-      <Preloader hidden={!isLoading} />
-      <div className="app">
+    <CurrentUserContext.Provider value={userData}>
+      <Router>
+        <ScrollToTop />
+        <Preloader hidden={!isLoading} />
+        <div className="app">
 
-        <Header
-          isLoggedIn={isLoggedIn}
-          onProfileClick={handleOpenProfile}
-          onLogout={handleLogout}
-        />
-        <Routes>
-
-          <Route
-            path="/"
-            element={
-              <Main
-                movies={popularMovies.slice(0, 12)}
-                series={popularSeries.slice(0, 12)}
-                searchResults={searchResults}
-                onResults={handleSearchResults}
-                onViewMore={handleViewMore}
-                onAddToMyWatchList={handleAddToMyWatchList}
-                isLoading={isLoadingData}
-                setIsLoading={setIsLoading}
-                setIsSearching={setIsSearching}
-                showNotification={showNotification}
-              />}
+          <Header
+            isLoggedIn={isLoggedIn}
+            onProfileClick={handleOpenProfile}
+            onLogout={handleLogout}
+            userName={userData.name}
+            userAvatar={userData.avatar}
           />
+          <Routes>
 
-          <Route
-            path="/peliculas"
-            element={
-              <Movies
-                movies={popularMovies}
-                onViewMore={handleViewMore}
-                isLoading={isLoadingData}
-                setIsLoading={setIsLoading}
-                onAddToMyWatchList={handleAddToMyWatchList}
-                showNotification={showNotification}
-
-              />}
-          />
-
-          <Route
-            path="/series"
-            element={
-              <Series
-                series={popularSeries}
-                onViewMore={handleViewMore}
-                isLoading={isLoadingData}
-                setIsLoading={setIsLoading}
-                onAddToMyWatchList={handleAddToMyWatchList}
-                showNotification={showNotification}
-
-              />}
-          />
-
-          <Route
-            path="/login"
-            element={isLoggedIn ?
-              <Navigate to="/" /> :
-              <Login
-                onLogin={handleLogin}
-                showNotification={showNotification}
-              />}
-          />
-
-          <Route
-            path="/signup"
-            element={isLoggedIn ?
-              <Navigate to="/" /> :
-              <Signup
-                onSignup={handleLogin}
-                showNotification={showNotification}
-              />}
-          />
-
-          <Route
-            path="/mi-lista"
-            element={
-              isLoggedIn ? (
-                <MyWatchList
-                  items={myWatchList}
-                  onToggleSeen={handleToggleSeen}
-                  onDelete={handleDelete}
+            <Route
+              path="/"
+              element={
+                <Main
+                  movies={popularMovies.slice(0, 12)}
+                  series={popularSeries.slice(0, 12)}
+                  searchResults={searchResults}
+                  onResults={handleSearchResults}
+                  onViewMore={handleViewMore}
+                  onAddToMyWatchList={handleAddToMyWatchList}
+                  isLoading={isLoadingData}
                   setIsLoading={setIsLoading}
-                  showActions={true}
+                  setIsSearching={setIsSearching}
                   showNotification={showNotification}
-                />
-              ) : (
-                <Navigate to="/login" />
-              )
-            }
+                />}
+            />
+
+            <Route
+              path="/peliculas"
+              element={
+                <Movies
+                  movies={popularMovies}
+                  onViewMore={handleViewMore}
+                  isLoading={isLoadingData}
+                  setIsLoading={setIsLoading}
+                  onAddToMyWatchList={handleAddToMyWatchList}
+                  showNotification={showNotification}
+
+                />}
+            />
+
+            <Route
+              path="/series"
+              element={
+                <Series
+                  series={popularSeries}
+                  onViewMore={handleViewMore}
+                  isLoading={isLoadingData}
+                  setIsLoading={setIsLoading}
+                  onAddToMyWatchList={handleAddToMyWatchList}
+                  showNotification={showNotification}
+
+                />}
+            />
+
+            <Route
+              path="/login"
+              element={isLoggedIn ?
+                <Navigate to="/" /> :
+                <Login
+                  onLogin={handleLogin}
+                  showNotification={showNotification}
+                />}
+            />
+
+            <Route
+              path="/signup"
+              element={isLoggedIn ?
+                <Navigate to="/" /> :
+                <Signup
+                  onSignup={handleLogin}
+                  showNotification={showNotification}
+                />}
+            />
+
+            <Route
+              path="/mi-lista"
+              element={
+                <ProtectedRoute isLoggedIn={isLoggedIn}>
+                  <MyWatchList
+                    items={myWatchList}
+                    onToggleSeen={handleToggleSeen}
+                    onDelete={handleDelete}
+                    setIsLoading={setIsLoading}
+                    showActions={true}
+                    showNotification={showNotification}
+                  />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route path="*" element={<Navigate to="/" />} />
+
+            <Route path="/acerca" element={<About />} />
+
+          </Routes>
+
+          <Footer />
+
+          <ModalEditProfile
+            isOpen={isProfileOpen}
+            onClose={handleCloseProfile}
+            userData={userData}
+            onUpdateUserInfo={handleUpdateUserInfo}
+            onChangeAvatar={handleChangeAvatar}
+
           />
 
-          <Route path="*" element={<Navigate to="/" />} />
+          <ModalMovieInfo
+            movie={selectedMovie}
+            isOpen={isModalOpen}
+            onClose={handleCloseMovie}
+            onAddToMyWatchList={handleAddToMyWatchList}
+            isLoggedIn={isLoggedIn}
+            showNotification={showNotification}
+            setPendingMovie={setPendingMovie}
+          />
 
-          <Route path="/acerca" element={<About />} />
+          <ModalNotification
+            isOpen={modalNotification.isOpen}
+            message={modalNotification.message}
+            type={modalNotification.type}
+            onClose={() => setModalNotification(prev => ({ ...prev, isOpen: false }))}
+          />
 
-        </Routes>
-
-        <Footer />
-
-        <ModalEditProfile
-          isOpen={isProfileOpen}
-          onClose={handleCloseProfile}
-          userData={userData}
-          onUpdateUserInfo={handleUpdateUserInfo}
-          onChangeAvatar={handleChangeAvatar}
-
-        />
-
-        <ModalMovieInfo
-          movie={selectedMovie}
-          isOpen={isModalOpen}
-          onClose={handleCloseMovie}
-          onAddToMyWatchList={handleAddToMyWatchList}
-          isLoggedIn={isLoggedIn}
-          showNotification={showNotification}
-        />
-
-        <ModalNotification
-          isOpen={modalNotification.isOpen}
-          message={modalNotification.message}
-          type={modalNotification.type}
-          onClose={() => setModalNotification(prev => ({ ...prev, isOpen: false }))}
-        />
-
-      </div>
-    </Router>
+        </div>
+      </Router>
+    </CurrentUserContext.Provider>
   );
 }

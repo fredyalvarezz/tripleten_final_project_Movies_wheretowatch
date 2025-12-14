@@ -7,7 +7,7 @@ export default function ModalNotification({ isOpen, message, type, onClose }) {
   useEffect(() => {
     if (!isOpen) return;
 
-    const timer = setTimeout(() => onClose(), 1000);
+    const timer = setTimeout(() => onClose(), 3000);
 
     return () => clearTimeout(timer);
   }, [isOpen, onClose]);

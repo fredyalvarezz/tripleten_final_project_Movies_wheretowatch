@@ -60,7 +60,7 @@ export default function MovieCard({
           <div className="movie-card__actions">
             <button
               className="movie-card__action-btn"
-              onClick={() => onToggleWatched(movie.id)}
+              onClick={() => onToggleWatched(movie.externalId)}
             >
               {movie.status === "pendiente" && "Marcar como viendo"}
               {movie.status === "viendo" && "Marcar como vista"}
@@ -69,7 +69,7 @@ export default function MovieCard({
 
             <button
               className="movie-card__action-btn movie-card__action-btn--delete"
-              onClick={() => onDelete(movie.id)}
+              onClick={() => onDelete(movie.externalId)}
             >
               Eliminar
             </button>

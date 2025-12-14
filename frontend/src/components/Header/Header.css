@@ -104,6 +104,66 @@
   padding: 20px 0;
 }
 
+/* --- BOTÓN DE PERFIL (avatar + nombre) --- */
+.header__profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--color-dark);
+  color: var(--color-primary);
+  border: 1px solid var(--color-dark);
+  border-radius: 100px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 15px;
+}
+
+.header__profile-btn:hover {
+  background-color: #2c4a80;
+}
+
+/* Avatar circular pequeño */
+.header__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Nombre del usuario */
+.header__username {
+  font-weight: 500;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Ajustes en móvil ---- */
+@media screen and (max-width: 768px) {
+  .header__profile-btn {
+    padding: 0;
+    border: none;
+    background: none;
+  }
+
+  .header__profile-btn:hover {
+    background: none;
+    text-decoration: underline;
+  }
+
+  .header__avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .header__username {
+    font-size: 14px;
+  }
+}
+
+
 
 @media screen and (max-width: 768px) {
   .header__nav-desktop {

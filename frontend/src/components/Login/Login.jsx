@@ -20,8 +20,7 @@ export default function Login({ onLogin, showNotification }) {
       // Notificar App.jsx
       onLogin();
 
-      navigate("/"); // Redirigir al inicio
-      showNotification("Sesión iniciada correctamente", "success");
+      navigate("/"); 
     } catch (err) {
       showNotification(err.message || "Credenciales incorrectas", "error");
     }

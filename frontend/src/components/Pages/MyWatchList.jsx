@@ -26,11 +26,11 @@ export default function MyWatchList({ items, onToggleSeen, onDelete, setIsLoadin
           ) : (
             list.map((item) => (
               <MovieCard
-                key={item.id}
+                key={item.externalId}
                 movie={item}
                 showActions={true}
-                onToggleWatched={() => onToggleSeen(item.id)}
-                onDelete={() => onDelete(item.id)}
+                onToggleWatched={() => onToggleSeen(item.externalId)}
+                onDelete={() => onDelete(item.externalId)}
               />
             ))
           )}
@@ -70,11 +70,11 @@ export default function MyWatchList({ items, onToggleSeen, onDelete, setIsLoadin
           <div className="movie-card-list">
             {searchResults.map((item) => (
               <MovieCard
-                key={item.id}
+                key={item.externalId}
                 movie={item}
                 showActions={true}
-                onToggleWatched={() => onToggleSeen(item.id)}
-                onDelete={() => onDelete(item.id)}
+                onToggleWatched={() => onToggleSeen(item.externalId)}
+                onDelete={() => onDelete(item.externalId)}
               />
             ))}
           </div>
