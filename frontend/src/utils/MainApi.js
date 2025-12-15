@@ -110,6 +110,6 @@ updateWatchlistItem(id, status) {
 }
 
 export default new MainApi({
-  //baseUrl: "https://streamwhere.mooo.com/api",
-  baseUrl: "http://localhost:3000/api",
+  baseUrl: "https://streamwhere.mooo.com/api",
+  //baseUrl: "http://localhost:3000/api",
 });
